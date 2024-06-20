@@ -19,20 +19,20 @@ from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
 
-from books_api.api import (
+from books_api.api.v1 import (
     books_router,
     authors_router,
     publishers_router,
     categories_router,
 )
 
-api = NinjaAPI()
-api.add_router("/books/", books_router)
-api.add_router("/authors/", authors_router)
-api.add_router("/publishers/", publishers_router)
-api.add_router("/categories/", categories_router)
+api_v1 = NinjaAPI()
+api_v1.add_router("/books/", books_router)
+api_v1.add_router("/authors/", authors_router)
+api_v1.add_router("/publishers/", publishers_router)
+api_v1.add_router("/categories/", categories_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", api.urls),
+    path("api/", api_v1.urls),
 ]

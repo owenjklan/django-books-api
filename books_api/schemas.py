@@ -1,43 +1,62 @@
 from ninja import Schema, ModelSchema
 
-from books_api.models import Book, Publisher, Author
+from books_api.models import Book, Publisher, Author, Category
 
 
-class BookSchema(ModelSchema):
-    publisher: "PublisherSchema"
-    authors: list["AuthorSubSchema"]
+class BookOutSchema(ModelSchema):
+    publisher: "PublisherOutSchema"
+    authors: list["AuthorOutSubSchema"]
 
     class Config:
         model = Book
         model_fields = "__all__"
 
 
-class BookSubSchema(ModelSchema):
+class BookInSchema(ModelSchema):
+    class Config:
+        model = Book
+        model_exclude = ["id"]  # ID provided in URL
+
+
+class BookInPatchSchema(ModelSchema):
+    class Meta:
+        model = Book
+        fields = "__all__"
+        fields_optional = "__all__"
+
+
+class BookOutSubSchema(ModelSchema):
     class Config:
         model = Book
         model_fields = "__all__"
 
 
-class PublisherSchema(ModelSchema):
+class PublisherOutSchema(ModelSchema):
     class Config:
         model = Publisher
         model_fields = "__all__"
 
 
-class AuthorSchema(ModelSchema):
+class CategoryOutSchema(ModelSchema):
+    class Config:
+        model = Category
+        model_fields = "__all__"
+
+
+class AuthorOutSchema(ModelSchema):
     """
     This schema is used when the Author object is the main
     object being queried
     """
 
-    books: list["BookSubSchema"]
+    books: list["BookOutSubSchema"]
 
     class Config:
         model = Author
         model_fields = "__all__"
 
 
-class AuthorSubSchema(ModelSchema):
+class AuthorOutSubSchema(ModelSchema):
     """
     This schema is used when Author information is provided
     as additional, related information for a parent object's
