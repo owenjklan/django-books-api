@@ -17,7 +17,22 @@ Including another URLconf
 
 from django.contrib import admin
 from django.urls import path
+from ninja import NinjaAPI
+
+from books_api.api import (
+    books_router,
+    authors_router,
+    publishers_router,
+    categories_router,
+)
+
+api = NinjaAPI()
+api.add_router("/books/", books_router)
+api.add_router("/authors/", authors_router)
+api.add_router("/publishers/", publishers_router)
+api.add_router("/categories/", categories_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("api/", api.urls),
 ]
