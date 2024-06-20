@@ -4,6 +4,8 @@ from books_api.models import Book, Publisher
 
 
 class BookSchema(ModelSchema):
+    publisher: "PublisherSchema"
+
     class Config:
         model = Book
         model_fields = "__all__"

@@ -9,7 +9,7 @@ class BookFormatChoices(models.TextChoices):
 
 class Book(models.Model):
     title = models.CharField(max_length=255)
-    isbn = models.CharField(max_length=13, unique=True)
+    isbn = models.CharField(max_length=13)
     format = models.CharField(max_length=25, choices=BookFormatChoices.choices)
     rrp = models.DecimalField(max_digits=5, decimal_places=2)
     publisher = models.ForeignKey("Publisher", on_delete=models.CASCADE)
