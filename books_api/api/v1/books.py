@@ -3,6 +3,7 @@ from django.http import JsonResponse, HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
 
+from books_api.helpers import patch_object, delete_object
 from books_api.models import Book, Publisher
 from books_api.schemas import (
     BookOutSchema,
@@ -43,26 +44,12 @@ def update_book(request: HttpRequest, book_id: int, book: BookInSchema) -> JsonR
 def patch_book(
     request: HttpRequest, book_id: int, book: BookInPatchSchema
 ) -> JsonResponse:
-    patched_book = get_object_or_404(Book, pk=book_id)
-    patch_fields = book.dict(exclude_unset=True)
+    response_code, response_dict = patch_object("books_api", "Book", book_id, book)
 
-    for attr, value in patch_fields.items():
-        # Determine if the supplied attribute is a foreign key or not
-        # Check for a field of the supplied attribute name
-        field_meta = Book._meta.get_field(attr)
-
-        if field_meta.__class__ is ForeignKey:
-            print(f"Foreign key attribute found: {attr}. Value: {value}")
-            referenced_model = get_object_or_404(field_meta.related_model, pk=value)
-            setattr(patched_book, attr, referenced_model)
-        else:
-            setattr(patched_book, attr, value)
-
-    patched_book.save()
-
-    return patched_book
+    return JsonResponse(status=response_code, data=response_dict)
 
 
 @router.delete("/{int:book_id}")
 def delete_book(request: HttpRequest, book_id: int) -> JsonResponse:
+    response_code, response_dict = delete_object("Book", book_id)
     return JsonResponse({"book_id": 1})
