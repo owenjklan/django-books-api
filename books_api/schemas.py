@@ -22,6 +22,7 @@ class BookInPatchSchema(ModelSchema):
     class Meta:
         model = Book
         fields = "__all__"
+        exclude = ("id",)
         fields_optional = "__all__"
 
 

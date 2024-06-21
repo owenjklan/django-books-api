@@ -52,4 +52,4 @@ def patch_book(
 @router.delete("/{int:book_id}")
 def delete_book(request: HttpRequest, book_id: int) -> JsonResponse:
     response_code, response_dict = delete_object("Book", book_id)
-    return JsonResponse({"book_id": 1})
+    return JsonResponse(status=response_code, data=response_dict)
