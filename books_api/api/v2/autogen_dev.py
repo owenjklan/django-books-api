@@ -1,0 +1,1 @@
+from autodojo import AutoDojoRouter

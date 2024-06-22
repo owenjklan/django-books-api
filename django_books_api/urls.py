@@ -19,6 +19,7 @@ from django.contrib import admin
 from django.urls import path
 from ninja import NinjaAPI
 
+from autodojo import AutoDojoRouter
 from books_api.api.v1 import (
     books_router,
     authors_router,
@@ -26,13 +27,27 @@ from books_api.api.v1 import (
     categories_router,
 )
 
-api_v1 = NinjaAPI()
-api_v1.add_router("/books/", books_router)
-api_v1.add_router("/authors/", authors_router)
-api_v1.add_router("/publishers/", publishers_router)
-api_v1.add_router("/categories/", categories_router)
+
+# api_v1 = NinjaAPI()
+# api_v1.add_router("/books/", books_router)
+# api_v1.add_router("/authors/", authors_router)
+# api_v1.add_router("/publishers/", publishers_router)
+# api_v1.add_router("/categories/", categories_router)
+
+# Experimental "V2" for auto-generated router, including ModelSchema
+# and views etc.
+books_adr = AutoDojoRouter(app_label="books_api", model="Book")
+v2_book_router = books_adr.get_router()
+
+authors_adr = AutoDojoRouter(app_label="books_api", model="Author")
+v2_author_router = authors_adr.get_router()
+
+api_v2 = NinjaAPI()
+api_v2.add_router(books_adr.base_url_path, v2_book_router)
+api_v2.add_router(authors_adr.base_url_path, v2_author_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
-    path("api/", api_v1.urls),
+    # path("api/v1/", api_v1.urls),
+    path("api/v2/", api_v2.urls),
 ]
