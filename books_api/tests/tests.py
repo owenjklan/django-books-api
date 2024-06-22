@@ -39,19 +39,19 @@ class ORMHelpersTestCase(TransactionTestCase):
         payload_data = {"title": new_title_text}
         # Patch the title of the book and confirm that Title was the only field that changed
         title_only_payload = BookInPatchSchema(**payload_data)
-        status, data = patch_object(
+        status, patched_object = patch_object(
             "books_api", "Book", self.book.id, title_only_payload
         )
 
         # Confirm successful response code and the title being our new title text
         self.assertEqual(status, 200)
-        self.assertEqual(data["title"], new_title_text)
+        self.assertEqual(patched_object.title, new_title_text)
 
         # Confirm that none of the other fields have changed
-        self.assertEqual(data["isbn"], BOOK_INITIAL_ISBN)
-        self.assertEqual(data["rrp"], BOOK_INITIAL_RRP)
-        self.assertEqual(data["format"], BOOK_INITIAL_FORMAT)
-        self.assertEqual(data["publisher"], self.publisher_1.id)
+        self.assertEqual(patched_object.isbn, BOOK_INITIAL_ISBN)
+        self.assertEqual(patched_object.rrp, BOOK_INITIAL_RRP)
+        self.assertEqual(patched_object.format, BOOK_INITIAL_FORMAT)
+        self.assertEqual(patched_object.publisher, self.publisher_1)
 
     def test_patch_multiple_fields(self):
         new_title_text = "New Title"
@@ -61,19 +61,19 @@ class ORMHelpersTestCase(TransactionTestCase):
         # Patch the title and RRP of the book and confirm that both fields are
         # the only ones that changed
         title_and_rrp_payload = BookInPatchSchema(**payload_data)
-        status, data = patch_object(
+        status, patched_object = patch_object(
             "books_api", "Book", self.book.id, title_and_rrp_payload
         )
 
         # Confirm successful response code and the title and RRP being updated
         self.assertEqual(status, 200)
-        self.assertEqual(data["title"], new_title_text)
-        self.assertEqual(data["rrp"], new_rrp)
+        self.assertEqual(patched_object.title, new_title_text)
+        self.assertEqual(patched_object.rrp, new_rrp)
 
         # Confirm that none of the other fields have changed
-        self.assertEqual(data["isbn"], BOOK_INITIAL_ISBN)
-        self.assertEqual(data["format"], BOOK_INITIAL_FORMAT)
-        self.assertEqual(data["publisher"], self.publisher_1.id)
+        self.assertEqual(patched_object.isbn, BOOK_INITIAL_ISBN)
+        self.assertEqual(patched_object.format, BOOK_INITIAL_FORMAT)
+        self.assertEqual(patched_object.publisher, self.publisher_1)
 
     def test_patch_fk_reference(self):
         new_publisher = Publisher.objects.create(name="Updated Publisher")
@@ -82,19 +82,19 @@ class ORMHelpersTestCase(TransactionTestCase):
         # Patch the value of a foreign key field. For our Book class, we're
         # using
         updated_publisher_payload = BookInPatchSchema(**payload_data)
-        status, data = patch_object(
+        status, patched_object = patch_object(
             "books_api", "Book", self.book.id, updated_publisher_payload
         )
 
         # Confirm successful response code and the referenced publisher being updated
         self.assertEqual(status, 200)
-        self.assertEqual(data["publisher"], new_publisher.id)
+        self.assertEqual(patched_object.publisher, new_publisher)
 
         # Confirm that none of the other fields have changed
-        self.assertEqual(data["title"], BOOK_INITIAL_TITLE)
-        self.assertEqual(data["rrp"], BOOK_INITIAL_RRP)
-        self.assertEqual(data["isbn"], BOOK_INITIAL_ISBN)
-        self.assertEqual(data["format"], BOOK_INITIAL_FORMAT)
+        self.assertEqual(patched_object.title, BOOK_INITIAL_TITLE)
+        self.assertEqual(patched_object.rrp, BOOK_INITIAL_RRP)
+        self.assertEqual(patched_object.isbn, BOOK_INITIAL_ISBN)
+        self.assertEqual(patched_object.format, BOOK_INITIAL_FORMAT)
 
     def test_patch_fk_fails_if_provided_unknown_fk(self):
         new_publisher = Publisher.objects.create(name="Updated Publisher")

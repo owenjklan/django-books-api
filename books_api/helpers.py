@@ -10,7 +10,7 @@ from ninja import ModelSchema, Schema
 
 def patch_object(
     app_label: str, model_name: str, pk: int, payload: ModelSchema
-) -> tuple[int, dict]:
+) -> tuple[int, Model | Optional[dict]]:
     """
     Re-usable helper for patching objects, updating only supplied fields.
 
@@ -61,11 +61,12 @@ def patch_object(
     patched_object.save()
     patched_object.refresh_from_db()
 
-    # Use Django's form helpers to translate ORM object to dict
-    return 200, model_to_dict(patched_object)
+    return 200, patched_object
 
 
-def delete_object(app_label: str, model_name: str, pk: int) -> tuple[int, dict]:
+def delete_object(
+    app_label: str, model_name: str, pk: int
+) -> tuple[int, Model | Optional[dict]]:
     """
     For a model, specified by its name string, attempt to delete the
     instance with the supplied primary key. This assumes integer
@@ -93,7 +94,7 @@ def delete_object(app_label: str, model_name: str, pk: int) -> tuple[int, dict]:
 
 def update_object(
     app_label: str, model_name: str, pk: int, payload: ModelSchema
-) -> tuple[int, dict]:
+) -> tuple[int, Model | Optional[dict]]:
     model_class = apps.get_model(app_label, model_name)
 
     # Look up the object being modified, if it exists
@@ -133,5 +134,4 @@ def update_object(
     updated_object.save()
     updated_object.refresh_from_db()
 
-    # Use Django's form helpers to translate ORM object to dict
-    return 200, model_to_dict(updated_object)
+    return 200, updated_object

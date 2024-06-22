@@ -67,13 +67,19 @@ class AuthorInPatchSchema(ModelSchema):
         fields_optional = "__all__"
 
 
+#
+# class BookAuthorListSchema(ModelSchema):
+#     class Meta:
+#         model = Author
+#         fields = "__all__"
+#         exclude = ("id", "books")
+
+
 class AuthorOutSchema(ModelSchema):
     """
     This schema is used when the Author object is the main
     object being queried
     """
-
-    books: list["BookOutSubSchema"]
 
     class Config:
         model = Author
@@ -93,3 +99,7 @@ class AuthorOutSubSchema(ModelSchema):
         model = Author
         model_fields = "__all__"
         model_exclude = ["books"]
+
+
+class PrimaryKeyListSchema(Schema):
+    ids: list[int]
