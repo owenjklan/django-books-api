@@ -52,8 +52,8 @@ class CategoryOutSchema(ModelSchema):
 
 class AuthorInSchema(ModelSchema):
     class Config:
-        model = Book
-        model_exclude = ["id"]  # ID provided in URL
+        model = Author
+        model_exclude = ["id", "books"]  # ID provided in URL
 
 
 class AuthorInPatchSchema(ModelSchema):
