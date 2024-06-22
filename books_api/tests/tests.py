@@ -1,18 +1,19 @@
+import unittest
 from decimal import Decimal
 
-from django.test import TestCase, TransactionTestCase
+from django.test import TransactionTestCase, Client
 
-from books_api.helpers import patch_object
+from books_api.helpers import patch_object, update_object
 from books_api.models import Publisher, Author, Book
-from books_api.schemas import BookInPatchSchema
+from books_api.schemas import BookInPatchSchema, BookInSchema
+
+BOOK_INITIAL_ISBN = "1231234567890"
+BOOK_INITIAL_RRP = Decimal("1.23")
+BOOK_INITIAL_TITLE = "Test Book's Original Title"
+BOOK_INITIAL_FORMAT = "Paperback"
 
 
 class ORMHelpersTestCase(TransactionTestCase):
-    BOOK_INITIAL_ISBN = "1231234567890"
-    BOOK_INITIAL_RRP = Decimal("1.23")
-    BOOK_INITIAL_TITLE = "Test Book's Original Title"
-    BOOK_INITIAL_FORMAT = "Paperback"
-
     def setUp(self):
         # Books need publishers
         Publisher.objects.all().delete()
@@ -26,10 +27,10 @@ class ORMHelpersTestCase(TransactionTestCase):
         )
 
         self.book = Book.objects.create(
-            title=self.BOOK_INITIAL_TITLE,
-            isbn=self.BOOK_INITIAL_ISBN,
-            rrp=self.BOOK_INITIAL_RRP,
-            format=self.BOOK_INITIAL_FORMAT,
+            title=BOOK_INITIAL_TITLE,
+            isbn=BOOK_INITIAL_ISBN,
+            rrp=BOOK_INITIAL_RRP,
+            format=BOOK_INITIAL_FORMAT,
             publisher=self.publisher_1,
         )
 
@@ -47,9 +48,9 @@ class ORMHelpersTestCase(TransactionTestCase):
         self.assertEqual(data["title"], new_title_text)
 
         # Confirm that none of the other fields have changed
-        self.assertEqual(data["isbn"], self.BOOK_INITIAL_ISBN)
-        self.assertEqual(data["rrp"], self.BOOK_INITIAL_RRP)
-        self.assertEqual(data["format"], self.BOOK_INITIAL_FORMAT)
+        self.assertEqual(data["isbn"], BOOK_INITIAL_ISBN)
+        self.assertEqual(data["rrp"], BOOK_INITIAL_RRP)
+        self.assertEqual(data["format"], BOOK_INITIAL_FORMAT)
         self.assertEqual(data["publisher"], self.publisher_1.id)
 
     def test_patch_multiple_fields(self):
@@ -70,8 +71,8 @@ class ORMHelpersTestCase(TransactionTestCase):
         self.assertEqual(data["rrp"], new_rrp)
 
         # Confirm that none of the other fields have changed
-        self.assertEqual(data["isbn"], self.BOOK_INITIAL_ISBN)
-        self.assertEqual(data["format"], self.BOOK_INITIAL_FORMAT)
+        self.assertEqual(data["isbn"], BOOK_INITIAL_ISBN)
+        self.assertEqual(data["format"], BOOK_INITIAL_FORMAT)
         self.assertEqual(data["publisher"], self.publisher_1.id)
 
     def test_patch_fk_reference(self):
@@ -90,10 +91,10 @@ class ORMHelpersTestCase(TransactionTestCase):
         self.assertEqual(data["publisher"], new_publisher.id)
 
         # Confirm that none of the other fields have changed
-        self.assertEqual(data["title"], self.BOOK_INITIAL_TITLE)
-        self.assertEqual(data["rrp"], self.BOOK_INITIAL_RRP)
-        self.assertEqual(data["isbn"], self.BOOK_INITIAL_ISBN)
-        self.assertEqual(data["format"], self.BOOK_INITIAL_FORMAT)
+        self.assertEqual(data["title"], BOOK_INITIAL_TITLE)
+        self.assertEqual(data["rrp"], BOOK_INITIAL_RRP)
+        self.assertEqual(data["isbn"], BOOK_INITIAL_ISBN)
+        self.assertEqual(data["format"], BOOK_INITIAL_FORMAT)
 
     def test_patch_fk_fails_if_provided_unknown_fk(self):
         new_publisher = Publisher.objects.create(name="Updated Publisher")
@@ -108,7 +109,55 @@ class ORMHelpersTestCase(TransactionTestCase):
 
         # Confirm successful response code and the referenced publisher being updated
         self.assertEqual(status, 404)
-        self.assertFalse(data["success"])
         self.assertEqual(
-            data["message"], "Publisher referenced by 'publisher_id' does not exist"
+            data["api_error"], "Publisher referenced by 'publisher_id' does not exist"
+        )
+
+
+class APIClientTests(TransactionTestCase):
+    def setUp(self):
+        # Books need publishers
+        Publisher.objects.all().delete()
+        self.publisher_1 = Publisher.objects.create(name="Test Publisher Number 1")
+        self.publisher_2 = Publisher.objects.create(name="Test Publisher Number 2")
+        self.author_1 = Author.objects.create(
+            first_name="Testy", last_name="Authorson", year_of_birth=1929
+        )
+        self.author_2 = Author.objects.create(
+            first_name="Another", last_name="McAuthor", year_of_birth=1980
+        )
+
+        self.book = Book.objects.create(
+            title=BOOK_INITIAL_TITLE,
+            isbn=BOOK_INITIAL_ISBN,
+            rrp=BOOK_INITIAL_RRP,
+            format=BOOK_INITIAL_FORMAT,
+            publisher=self.publisher_1,
+        )
+
+    def test_update_book_via_http(self):
+        """
+        This test method is essentially superfluous, but present to demonstrate the use
+        of Django's Test HTTP client in a fairly simple case.
+        """
+        client = Client()
+
+        # For PUT-based updates, we need to provide all required fields
+        book_update_payload = self.book.__dict__
+        # Pop the '_state' key, because it will upset the JSON serialisation
+        _ = book_update_payload.pop("_state", None)
+
+        # Change the Title
+        book_update_payload["title"] = "PUT-updated title"
+
+        response = client.put(
+            f"/api/books/{self.book.id}",
+            book_update_payload,
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        response_json = response.json()
+        self.assertEqual(
+            response_json["title"],
+            "PUT-updated title",
         )

@@ -1,6 +1,12 @@
+from typing import Literal
+
 from ninja import Schema, ModelSchema
 
 from books_api.models import Book, Publisher, Author, Category
+
+
+class ErrorSchema(Schema):
+    api_error: str
 
 
 class BookOutSchema(ModelSchema):
@@ -42,6 +48,23 @@ class CategoryOutSchema(ModelSchema):
     class Config:
         model = Category
         model_fields = "__all__"
+
+
+class AuthorInSchema(ModelSchema):
+    class Config:
+        model = Book
+        model_exclude = ["id"]  # ID provided in URL
+
+
+class AuthorInPatchSchema(ModelSchema):
+    class Meta:
+        model = Author
+        fields = "__all__"
+        exclude = (
+            "id",
+            "books",
+        )
+        fields_optional = "__all__"
 
 
 class AuthorOutSchema(ModelSchema):

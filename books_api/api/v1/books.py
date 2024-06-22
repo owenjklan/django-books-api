@@ -2,7 +2,7 @@ from django.http import JsonResponse, HttpRequest
 from django.shortcuts import get_object_or_404
 from ninja import Router
 
-from books_api.helpers import patch_object, delete_object
+from books_api.helpers import patch_object, delete_object, update_object
 from books_api.models import Book
 from books_api.schemas import (
     BookOutSchema,
@@ -41,8 +41,9 @@ def add_book(request: HttpRequest, book: BookInSchema) -> JsonResponse:
     "/{int:book_id}", response={200: BookOutSchema, 400: ErrorSchema, 404: ErrorSchema}
 )
 def update_book(request: HttpRequest, book_id: int, book: BookInSchema) -> JsonResponse:
-    updated_book = Book.objects.update(pk=book_id, **book.dict())
-    return updated_book
+    response_code, response_dict = update_object("books_api", "Book", book_id, book)
+
+    return JsonResponse(status=response_code, data=response_dict)
 
 
 @router.patch(
