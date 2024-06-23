@@ -4,13 +4,23 @@ from django.db import models
 
 from ninja import ModelSchema
 
-from autodojo.generators import AutoDojoGetListGenerator
-from autodojo.generators import AutoDojoPatchGenerator
+from autodojo.generators import (
+    AutoDojoDeleteGenerator,
+    AutoDojoGetGenerator,
+    AutoDojoGetListGenerator,
+    AutoDojoPatchGenerator,
+    AutoDojoPostGenerator,
+    AutoDojoPutGenerator,
+)
 
 # Mapping of HTTP method names to their generation class
 method_generation_classes = {
-    "GET": AutoDojoGetListGenerator,
+    "GET": AutoDojoGetGenerator,
+    "GETLIST": AutoDojoGetListGenerator,
     "PATCH": AutoDojoPatchGenerator,
+    "DELETE": AutoDojoDeleteGenerator,
+    "POST": AutoDojoPostGenerator,
+    "PUT": AutoDojoPutGenerator,
 }
 
 
@@ -38,6 +48,7 @@ class AutoDojoView:
 
     SUPPORTED_METHODS = [
         "GET",
+        "GETLIST",  # Special method to differentiate get all from get individual
         "POST",
         "PUT",
         "DELETE",
@@ -78,13 +89,18 @@ class AutoDojoView:
         self.model_singular = model_class._meta.model_name.lower()
         self.model_plural = model_class._meta.verbose_name_plural.lower()
 
-        self.generator_class = method_generation_classes[http_method](
-            model_class=self.model_class,
-            request_schema=request_schema,
-            response_schema=response_schema,
-            request_schema_config=request_schema,
-            response_schema_config=response_schema,
-        )
+        try:
+            self.generator_class = method_generation_classes[http_method](
+                model_class=self.model_class,
+                request_schema=request_schema,
+                response_schema=response_schema,
+                request_schema_config=request_schema,
+                response_schema_config=response_schema,
+            )
+        except KeyError as ke:
+            raise NotImplementedError(
+                f"HTTP method has no generator class: {http_method}"
+            )
 
         # Generate request and response schemas, if not provided
         self.request_schema = (

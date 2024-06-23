@@ -42,9 +42,10 @@ class AutoDojoViewGenerator:
             raise RuntimeError(
                 "Refusing to generate request schema when existing schema was supplied!"
             )
-        self.request_schema = create_schema(
-            self.model_class, **self.request_schema_config
-        )
+
+        schema_config = self._determine_request_schema_config()
+
+        self.request_schema = create_schema(self.model_class, **schema_config)
         return self.request_schema
 
     def generate_response_schema(
@@ -59,9 +60,10 @@ class AutoDojoViewGenerator:
             raise RuntimeError(
                 "Refusing to generate response schema when existing schema was supplied!"
             )
-        self.response_schema = create_schema(
-            self.model_class, **self.response_schema_config
-        )
+
+        schema_config = self._determine_response_schema_config()
+
+        self.response_schema = create_schema(self.model_class, **schema_config)
         return self.response_schema
 
     def patch_view_signature(self, view_func: Callable) -> Callable:
@@ -76,3 +78,46 @@ class AutoDojoViewGenerator:
         Default implementation makes no changes.
         """
         return view_func
+
+    def _determine_request_schema_config(self) -> dict[str, Any]:
+        # The create_schema() call won't accept None for the
+        # kwargs dict, so we need an actual dictionary
+        schema_config = {}
+
+        # Setup generator-specific defaults, if present
+        if hasattr(self, "default_request_schema_config"):
+            if not isinstance(self.default_request_schema_config, dict):
+                raise TypeError(
+                    f"{self.__class__.__name__}.default_request_schema_config must be a dict"
+                )
+
+            schema_config = self.default_request_schema_config
+
+            # Now apply schema configs that may have been supplied by
+        # the user
+        if self.request_schema_config:
+            for key, value in self.request_schema_config.items():
+                schema_config[key] = value
+
+        return schema_config
+
+    def _determine_response_schema_config(self) -> dict[str, Any]:
+        # The create_schema() call won't accept None for the
+        # kwargs dict, so we need an actual dictionary
+        schema_config = {}
+
+        # Setup generator-specific defaults, if present
+        if hasattr(self, "default_response_schema_config"):
+            if not isinstance(self.default_response_schema_config, dict):
+                raise TypeError(
+                    f"{self.__class__.__name__}.default_response_schema_config must be a dict"
+                )
+            schema_config = self.default_response_schema_config
+
+        # Now apply schema configs that may have been supplied by
+        # the user
+        if self.request_schema_config:
+            for key, value in self.request_schema_config.items():
+                schema_config[key] = value
+
+        return schema_config

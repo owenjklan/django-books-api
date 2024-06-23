@@ -36,7 +36,7 @@ from books_api.api.v1 import (
 
 # Experimental "V2" for auto-generated router, including ModelSchema
 # and views etc.
-books_adr = AutoDojoRouter(app_label="books_api", model="Book", http_methods=["GET"])
+books_adr = AutoDojoRouter(app_label="books_api", model="Book")
 v2_book_router = books_adr.get_router()
 
 authors_adr = AutoDojoRouter(

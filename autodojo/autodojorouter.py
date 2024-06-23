@@ -9,11 +9,19 @@ from autodojo.autodojoview import AutoDojoView
 
 DEFAULT_METHODS = (
     "GET",
+    "GETLIST",  # Special method to differentiate from get-single-object
     "POST",
     "PATCH",
     "PUT",
     "DELETE",
 )
+
+# Special methods, especially "GETLIST" 'just work' in terms of lookup
+# for generator classes etc, but the HTTP method used will need to be
+# translated.
+SPECIAL_METHODS_TRANSLATION = {
+    "GETLIST": "GET",
+}
 
 
 class AutoDojoRouter:
@@ -52,9 +60,14 @@ class AutoDojoRouter:
         for http_method in http_methods:
             auto_view = AutoDojoView(self.model_class, http_method)
 
+            # "GETLIST" in particular will need to be translated to "GET"
+            actual_method_verb = SPECIAL_METHODS_TRANSLATION.get(
+                http_method, http_method
+            )
+
             self.router.add_api_operation(
                 auto_view.url_path,
-                methods=[http_method],
+                methods=[actual_method_verb],
                 response=auto_view.response_config,
                 view_func=auto_view.view_func,
                 tags=[self.model_class_name],
