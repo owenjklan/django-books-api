@@ -6,6 +6,7 @@ from django.db.models import Model
 
 from ninja import ModelSchema
 
+from autodojo.defaults import DefaultErrorResponseSchema
 from autodojo.generators.base_classes import AutoDojoViewGenerator
 from autodojo.generators.utility import ensure_unique_name
 
@@ -79,7 +80,7 @@ class AutoDojoPatchGenerator(AutoDojoViewGenerator):
 
     @property
     def response_config(self) -> dict[int, Optional[Any]]:
-        return {200: self.response_schema}
+        return {200: self.response_schema, 404: DefaultErrorResponseSchema}
 
     def patch_view_signature(self, view_func: Callable) -> Callable:
         """

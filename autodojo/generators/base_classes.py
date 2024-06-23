@@ -7,6 +7,10 @@ from ninja.orm import create_schema
 
 
 class AutoDojoViewGenerator:
+    """
+    Base class for HTTP method-specific generator classes.
+    """
+
     def __init__(
         self,
         model_class: Model,
@@ -29,6 +33,11 @@ class AutoDojoViewGenerator:
     def generate_request_schema(
         self,
     ) -> ModelSchema:
+        """
+        Generate a schema to be used for incoming request payloads but catches
+        attempts to generate a schema in situations where one was explicitly
+        supplied.
+        """
         if self.request_schema:
             raise RuntimeError(
                 "Refusing to generate request schema when existing schema was supplied!"
@@ -41,6 +50,11 @@ class AutoDojoViewGenerator:
     def generate_response_schema(
         self,
     ) -> ModelSchema:
+        """
+        Generate a schema to be used for outgoing response payloads but catches
+        attempts to generate a schema in situations where one was explicitly
+        supplied.
+        """
         if self.response_schema_config:
             raise RuntimeError(
                 "Refusing to generate response schema when existing schema was supplied!"
@@ -52,6 +66,13 @@ class AutoDojoViewGenerator:
 
     def patch_view_signature(self, view_func: Callable) -> Callable:
         """
+        Programmatically-generated view functions can specify parameter
+        names, like 'payload' for example, but because the input schema
+        definitions aren't known until run-time, we may need to adjust
+        the generated view function's signature, updating the type
+        annotations to use our generated classes. Otherwise, Django Ninja
+        won't be able to supply the correct payloads.
+
         Default implementation makes no changes.
         """
         return view_func

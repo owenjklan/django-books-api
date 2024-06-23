@@ -41,12 +41,14 @@ class AutoDojoRouter:
         self.auth_class = auth_class
 
         # The generated router will be "mounted" here in the urlpatterns
-        self.base_url_path = f"/{self.model_class._meta.object_name.lower()}/"
+        self.base_url_path = f"/{self.model_class._meta.verbose_name_plural}/"
 
         # Now, let's wire everything up in the router
         self.router = ninja.Router()
 
         # Generate required method implementations
+        # TODO: allow control/configuration of status-code specific
+        #       response configurations.
         for http_method in http_methods:
             auto_view = AutoDojoView(self.model_class, http_method)
 

@@ -29,6 +29,9 @@ class AutoDojoView:
     passed in, then the presence of these dictionaries will raise an
     exception.
 
+    For details of create_schema(), consult the Ninja documentation at
+    https://django-ninja.dev/guides/response/django-pydantic-create-schema/
+
     This class can be used in isolation or used by the AutoDojoRouter
     to provide a more complete solution.
     """
