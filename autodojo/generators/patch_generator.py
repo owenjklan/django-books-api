@@ -16,6 +16,7 @@ class AutoDojoPatchGenerator(AutoDojoViewGenerator):
     Generator for PATCH
     """
 
+    default_request_schema_config = {"exclude": ("id",), "optional_fields": "__all__"}
     default_response_schema_config = {"name": "Generated{model}Out"}
 
     def generate_view_func(self) -> Callable:
