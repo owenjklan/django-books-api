@@ -35,7 +35,7 @@ class AutoDojoRouter:
         self.base_url_path = f"/{self.model_class._meta.verbose_name_plural}/"
 
         # Now, let's wire everything up in the router
-        self.router = ninja.Router()
+        self._router = ninja.Router()
 
         # Generate required method implementations
         # TODO: allow control/configuration of status-code specific
@@ -48,7 +48,7 @@ class AutoDojoRouter:
                 http_method, http_method
             )
 
-            self.router.add_api_operation(
+            self._router.add_api_operation(
                 auto_view.url_path,
                 methods=[actual_method_verb],
                 response=auto_view.response_config,
@@ -56,8 +56,13 @@ class AutoDojoRouter:
                 tags=[self.model_class_name],
             )
 
-    def get_router(self) -> ninja.Router:
-        return self.router
+    @property
+    def router(self) -> ninja.Router:
+        return self._router
+
+    @property
+    def add_router_args(self) -> tuple[str, ninja.Router]:
+        return self.base_url_path, self._router
 
     def _enforce_required_kwargs(
         self, called_args: dict, required_kwargs: list[str]
