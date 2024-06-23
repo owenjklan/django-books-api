@@ -1,3 +1,5 @@
+from typing import Any
+
 import ninja
 from django.apps import apps
 from django.db import models
@@ -15,12 +17,21 @@ class AutoDojoRouter:
         model: str | models.Model = None,
         http_methods: list[str] = DEFAULT_METHODS,
         auth_class: type = None,
+        response_schema_configs: dict[str, dict[str, Any]] = None,
+        request_schema_configs: dict[str, dict[str, Any]] = None,
     ):
         """ """
         # Despite the kwargs all having defaults, the following args MUST be non-None.
         # The reason the signature is like this is so the call can be somewhat self-describing
         required_kwargs = ["app_label", "model"]
         self._enforce_required_kwargs(locals(), required_kwargs)
+
+        self.response_schema_configs = (
+            response_schema_configs if response_schema_configs else {}
+        )
+        self.request_schema_configs = (
+            request_schema_configs if request_schema_configs else {}
+        )
 
         self.app_label = (
             app_label  # Must be set before _resolve_orm_model_class() is called
@@ -35,13 +46,22 @@ class AutoDojoRouter:
         self.base_url_path = f"/{self.model_class._meta.verbose_name_plural}/"
 
         # Now, let's wire everything up in the router
-        self._router = ninja.Router()
+        self._router = ninja.Router(auth=self.auth_class)
 
         # Generate required method implementations
         # TODO: allow control/configuration of status-code specific
         #       response configurations.
         for http_method in http_methods:
-            auto_view = AutoDojoView(self.model_class, http_method)
+            auto_view = AutoDojoView(
+                self.model_class,
+                http_method,
+                request_schema_config=self.request_schema_configs.get(
+                    http_method, None
+                ),
+                response_schema_config=self.response_schema_configs.get(
+                    http_method, None
+                ),
+            )
 
             # "GETLIST" in particular will need to be translated to "GET"
             actual_method_verb = SPECIAL_METHODS_TRANSLATION.get(

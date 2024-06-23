@@ -60,7 +60,7 @@ class AutoDojoViewGenerator:
         attempts to generate a schema in situations where one was explicitly
         supplied.
         """
-        if self.response_schema_config:
+        if self.response_schema:
             raise RuntimeError(
                 "Refusing to generate response schema when existing schema was supplied!"
             )
@@ -135,8 +135,8 @@ class AutoDojoViewGenerator:
 
         # Now apply schema configs that may have been supplied by
         # the user
-        if self.request_schema_config:
-            for key, value in self.request_schema_config.items():
+        if self.response_schema_config:
+            for key, value in self.response_schema_config.items():
                 schema_config[key] = value
 
         # Double-check for a defined 'name'. If not provided by

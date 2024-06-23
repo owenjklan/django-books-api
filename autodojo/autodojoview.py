@@ -95,8 +95,8 @@ class AutoDojoView:
                 http_method=http_method,
                 request_schema=request_schema,
                 response_schema=response_schema,
-                request_schema_config=request_schema,
-                response_schema_config=response_schema,
+                request_schema_config=request_schema_config,
+                response_schema_config=response_schema_config,
             )
         except KeyError as ke:
             raise NotImplementedError(
