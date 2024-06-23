@@ -11,6 +11,8 @@ from autodojo.generators.utility import ensure_unique_name
 
 
 class AutoDojoPutGenerator(AutoDojoViewGenerator):
+    default_response_schema_config = {"name": "Generated{model}Out"}
+
     def generate_view_func(self) -> Callable:
         def put_view_func(
             request: HttpRequest, id: int, payload: Schema, *args, **kwargs

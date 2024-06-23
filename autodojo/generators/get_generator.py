@@ -12,6 +12,8 @@ class AutoDojoGetListGenerator(AutoDojoViewGenerator):
     Generator for GET all (ie: List all) endpoint
     """
 
+    default_response_schema_config = {"name": "Generated{model}Out"}
+
     def generate_view_func(self) -> Callable:
         def get_list_view_func(request: HttpRequest, *args, **kwargs):
             object_collection = self.model_class.objects.all()
@@ -34,6 +36,8 @@ class AutoDojoGetGenerator(AutoDojoViewGenerator):
     """
     Generator for GET single item endpoint
     """
+
+    default_response_schema_config = {"name": "Generated{model}Out"}
 
     def generate_view_func(self) -> Callable:
         def get_view_func(request: HttpRequest, id: int, *args, **kwargs):

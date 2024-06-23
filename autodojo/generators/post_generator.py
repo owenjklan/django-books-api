@@ -9,6 +9,7 @@ from autodojo.generators.utility import ensure_unique_name
 
 class AutoDojoPostGenerator(AutoDojoViewGenerator):
     default_request_schema_config = {"exclude": ("id",)}
+    default_response_schema_config = {"name": "Generated{model}Out"}
 
     def generate_view_func(self) -> Callable:
         def post_view_func(request: HttpRequest, payload: Schema, *args, **kwargs):

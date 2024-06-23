@@ -95,7 +95,7 @@ class AutoDojoViewGenerator:
                     f"{self.__class__.__name__}.default_request_schema_config must be a dict"
                 )
 
-            schema_config = self.default_request_schema_config
+            schema_config = self.default_request_schema_config.copy()
 
             # Now apply schema configs that may have been supplied by
         # the user
@@ -105,12 +105,18 @@ class AutoDojoViewGenerator:
 
         # Double-check for a defined 'name'. If not provided by
         # defaults or user-supplied configuration, then we'll
-        # automatically generate one
+        # automatically generate one. Note that if the name WAS
+        # provided by defaults or user configuration, we'll treat
+        # it as a format string and supply 'model' and 'http_verb'.
+        http_verb = SPECIAL_METHODS_TRANSLATION.get(
+            self.http_method, self.http_method
+        ).title()
         if "name" not in schema_config:
-            http_verb = SPECIAL_METHODS_TRANSLATION.get(
-                self.http_method, self.http_method
-            ).title()
             schema_config["name"] = f"Generated{self.model_class_name}{http_verb}In"
+        else:
+            schema_config["name"] = schema_config["name"].format(
+                model=self.model_class_name, http_verb=http_verb
+            )
 
         return schema_config
 
@@ -125,7 +131,7 @@ class AutoDojoViewGenerator:
                 raise TypeError(
                     f"{self.__class__.__name__}.default_response_schema_config must be a dict"
                 )
-            schema_config = self.default_response_schema_config
+            schema_config = self.default_response_schema_config.copy()
 
         # Now apply schema configs that may have been supplied by
         # the user
@@ -135,11 +141,17 @@ class AutoDojoViewGenerator:
 
         # Double-check for a defined 'name'. If not provided by
         # defaults or user-supplied configuration, then we'll
-        # automatically generate one
+        # automatically generate one. Note that if the name WAS
+        # provided by defaults or user configuration, we'll treat
+        # it as a format string and supply 'model' and 'http_verb'.
+        http_verb = SPECIAL_METHODS_TRANSLATION.get(
+            self.http_method, self.http_method
+        ).title()
         if "name" not in schema_config:
-            http_verb = SPECIAL_METHODS_TRANSLATION.get(
-                self.http_method, self.http_method
-            ).title()
             schema_config["name"] = f"Generated{self.model_class_name}{http_verb}Out"
+        else:
+            schema_config["name"] = schema_config["name"].format(
+                model=self.model_class_name, http_verb=http_verb
+            )
 
         return schema_config

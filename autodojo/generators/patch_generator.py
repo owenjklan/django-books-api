@@ -16,6 +16,8 @@ class AutoDojoPatchGenerator(AutoDojoViewGenerator):
     Generator for PATCH
     """
 
+    default_response_schema_config = {"name": "Generated{model}Out"}
+
     def generate_view_func(self) -> Callable:
         def patch_view_func(
             request: HttpRequest, id: int, payload: ModelSchema, *args, **kwargs
