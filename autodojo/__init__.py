@@ -1,1 +1,1 @@
-from .automodelrouter import AutoDojoRouter
+from .autodojorouter import AutoDojoRouter

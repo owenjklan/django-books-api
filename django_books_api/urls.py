@@ -36,10 +36,12 @@ from books_api.api.v1 import (
 
 # Experimental "V2" for auto-generated router, including ModelSchema
 # and views etc.
-books_adr = AutoDojoRouter(app_label="books_api", model="Book")
+books_adr = AutoDojoRouter(app_label="books_api", model="Book", http_methods=["GET"])
 v2_book_router = books_adr.get_router()
 
-authors_adr = AutoDojoRouter(app_label="books_api", model="Author")
+authors_adr = AutoDojoRouter(
+    app_label="books_api", model="Author", http_methods=["GET", "PATCH"]
+)
 v2_author_router = authors_adr.get_router()
 
 api_v2 = NinjaAPI()
