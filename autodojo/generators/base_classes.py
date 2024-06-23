@@ -5,6 +5,8 @@ from django.db.models import Model
 from ninja import ModelSchema
 from ninja.orm import create_schema
 
+from autodojo.constants import SPECIAL_METHODS_TRANSLATION
+
 
 class AutoDojoViewGenerator:
     """
@@ -14,6 +16,7 @@ class AutoDojoViewGenerator:
     def __init__(
         self,
         model_class: Model,
+        http_method: str,
         request_schema: ModelSchema = None,
         response_schema: ModelSchema = None,
         request_schema_config: dict[str, Any] = None,
@@ -29,6 +32,7 @@ class AutoDojoViewGenerator:
         self.response_schema_config = (
             response_schema_config if response_schema_config is not None else {}
         )
+        self.http_method = http_method
 
     def generate_request_schema(
         self,
@@ -99,6 +103,15 @@ class AutoDojoViewGenerator:
             for key, value in self.request_schema_config.items():
                 schema_config[key] = value
 
+        # Double-check for a defined 'name'. If not provided by
+        # defaults or user-supplied configuration, then we'll
+        # automatically generate one
+        if "name" not in schema_config:
+            http_verb = SPECIAL_METHODS_TRANSLATION.get(
+                self.http_method, self.http_method
+            ).title()
+            schema_config["name"] = f"Generated{self.model_class_name}{http_verb}In"
+
         return schema_config
 
     def _determine_response_schema_config(self) -> dict[str, Any]:
@@ -119,5 +132,14 @@ class AutoDojoViewGenerator:
         if self.request_schema_config:
             for key, value in self.request_schema_config.items():
                 schema_config[key] = value
+
+        # Double-check for a defined 'name'. If not provided by
+        # defaults or user-supplied configuration, then we'll
+        # automatically generate one
+        if "name" not in schema_config:
+            http_verb = SPECIAL_METHODS_TRANSLATION.get(
+                self.http_method, self.http_method
+            ).title()
+            schema_config["name"] = f"Generated{self.model_class_name}{http_verb}Out"
 
         return schema_config

@@ -1,27 +1,10 @@
-from typing import Callable, Any
-
 import ninja
 from django.apps import apps
 from django.db import models
 
 
 from autodojo.autodojoview import AutoDojoView
-
-DEFAULT_METHODS = (
-    "GET",
-    "GETLIST",  # Special method to differentiate from get-single-object
-    "POST",
-    "PATCH",
-    "PUT",
-    "DELETE",
-)
-
-# Special methods, especially "GETLIST" 'just work' in terms of lookup
-# for generator classes etc, but the HTTP method used will need to be
-# translated.
-SPECIAL_METHODS_TRANSLATION = {
-    "GETLIST": "GET",
-}
+from autodojo.constants import SPECIAL_METHODS_TRANSLATION, DEFAULT_METHODS
 
 
 class AutoDojoRouter:

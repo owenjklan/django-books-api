@@ -92,6 +92,7 @@ class AutoDojoView:
         try:
             self.generator_class = method_generation_classes[http_method](
                 model_class=self.model_class,
+                http_method=http_method,
                 request_schema=request_schema,
                 response_schema=response_schema,
                 request_schema_config=request_schema,
