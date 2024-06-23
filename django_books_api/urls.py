@@ -34,10 +34,31 @@ from books_api.api.v1 import (
 # api_v1.add_router("/publishers/", publishers_router)
 # api_v1.add_router("/categories/", categories_router)
 
+from ninja.security import django_auth
+
 # Experimental "V2" for auto-generated router, including ModelSchema
 # and views etc.
-books_adr = AutoDojoRouter(app_label="books_api", model="Book")
-authors_adr = AutoDojoRouter(app_label="books_api", model="Author")
+book_response_schema_configs = {
+    "GET": {"depth": 2},
+    "GETLIST": {"depth": 2},
+}
+
+authors_response_schema_configs = {
+    "GET": {"depth": 2},
+    "GETLIST": {"depth": 2},
+}
+
+books_adr = AutoDojoRouter(
+    app_label="books_api",
+    model="Book",
+    # auth_class=django_auth,
+    response_schema_configs=book_response_schema_configs,
+)
+authors_adr = AutoDojoRouter(
+    app_label="books_api",
+    model="Author",
+    response_schema_configs=authors_response_schema_configs,
+)
 categories_adr = AutoDojoRouter(app_label="books_api", model="Category")
 publishers_adr = AutoDojoRouter(app_label="books_api", model="Publisher")
 
