@@ -37,14 +37,15 @@ from books_api.api.v1 import (
 # Experimental "V2" for auto-generated router, including ModelSchema
 # and views etc.
 books_adr = AutoDojoRouter(app_label="books_api", model="Book")
-v2_book_router = books_adr.get_router()
-
 authors_adr = AutoDojoRouter(app_label="books_api", model="Author")
-v2_author_router = authors_adr.get_router()
+categories_adr = AutoDojoRouter(app_label="books_api", model="Category")
+publishers_adr = AutoDojoRouter(app_label="books_api", model="Publisher")
 
 api_v2 = NinjaAPI()
-api_v2.add_router(books_adr.base_url_path, v2_book_router)
-api_v2.add_router(authors_adr.base_url_path, v2_author_router)
+api_v2.add_router(*books_adr.add_router_args)
+api_v2.add_router(*authors_adr.add_router_args)
+api_v2.add_router(*categories_adr.add_router_args)
+api_v2.add_router(*publishers_adr.add_router_args)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
