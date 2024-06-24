@@ -6,6 +6,11 @@ RUN pip install --no-cache-dir --upgrade -r /app/requirements.txt
 
 COPY . /app
 
+WORKDIR /app
+
 ENV DJANGO_SETTINGS_MODULE=django_books_api.settings
 
-CMD [ "cd /app; python manage.py runserver" ]
+EXPOSE 8000
+
+ENTRYPOINT ["python /app/manage.py"]
+CMD [ "bash -c 'cd /app; python manage.py runserver'" ]
