@@ -34,6 +34,18 @@ class AutoDojoViewGenerator:
         )
         self.http_method = http_method
 
+        # Note which fields in the model are Foreign Key fields and which
+        # are M2M fields.
+        self.fk_fields = dict()
+        self.m2m_fields = dict()
+        for f in self.model_class._meta.get_fields():
+            if not f.is_relation:
+                continue
+            if f.many_to_one or f.one_to_one:
+                self.fk_fields[f.name] = f
+            elif f.many_to_many:
+                self.m2m_fields[f.name] = f
+
     def generate_request_schema(
         self,
     ) -> ModelSchema:
@@ -82,6 +94,25 @@ class AutoDojoViewGenerator:
         Default implementation makes no changes.
         """
         return view_func
+
+    def _resolve_fk_references(self, payload_dict: dict[str, Any]) -> dict[str, Any]:
+        """
+        Resolve any foreign key references received in a payload dictionary
+        into actual ORM objects, suitable for passing into the ORM model's
+        'create()' method.
+        """
+        for field_name, value in payload_dict.items():
+            if field_name in self.fk_fields:
+                related_model = self.fk_fields[field_name].related_model
+                try:
+                    related_object = related_model.objects.get(pk=value)
+                except related_model.DoesNotExist:
+                    # append '_id' suffix so the reported field name matches
+                    # what the user supplied in the input JSON
+                    message = f"{related_model._meta.object_name} referenced by '{field_name}_id' does not exist!"
+                    # TODO: Consider custom exception?
+                    raise AttributeError(message)
+                payload_dict[field_name] = related_object
 
     def _determine_request_schema_config(self) -> dict[str, Any]:
         # The create_schema() call won't accept None for the

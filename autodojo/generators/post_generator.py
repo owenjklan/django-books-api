@@ -3,6 +3,7 @@ from typing import Callable, Any, Optional
 from django.http import HttpRequest
 from ninja import Schema
 
+from autodojo.defaults import DefaultErrorResponseSchema
 from autodojo.generators.base_classes import AutoDojoViewGenerator
 from autodojo.generators.utility import ensure_unique_name
 
@@ -13,7 +14,16 @@ class AutoDojoPostGenerator(AutoDojoViewGenerator):
 
     def generate_view_func(self) -> Callable:
         def post_view_func(request: HttpRequest, payload: Schema, *args, **kwargs):
-            new_object = self.model_class.objects.create(**payload.dict())
+            payload_dict = payload.dict(exclude_unset=True)
+
+            # If any referenced models can't be found, for the POST/Create
+            # scenario, we'll return a 400 code, not 404.
+            try:
+                self._resolve_fk_references(payload_dict)
+            except AttributeError as ae:  # TODO: Custom exception?
+                return 400, {"api_error": str(ae)}
+
+            new_object = self.model_class.objects.create(**payload_dict)
             return new_object
 
         returned_func = ensure_unique_name(self.model_class, post_view_func)
@@ -25,7 +35,7 @@ class AutoDojoPostGenerator(AutoDojoViewGenerator):
 
     @property
     def response_config(self) -> dict[int, Optional[Any]]:
-        return {200: self.response_schema}
+        return {200: self.response_schema, 400: DefaultErrorResponseSchema}
 
     def patch_view_signature(self, view_func: Callable) -> Callable:
         """
