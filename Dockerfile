@@ -1,4 +1,4 @@
-FROM python:3.10
+FROM python:3.10-slim
 
 COPY ./requirements.txt /app/requirements.txt
 
@@ -12,5 +12,6 @@ ENV DJANGO_SETTINGS_MODULE=django_books_api.settings
 
 EXPOSE 8000
 
-ENTRYPOINT ["python /app/manage.py"]
-CMD [ "bash -c 'cd /app; python manage.py runserver'" ]
+# Using the test server as this isn't a production app deployment.
+# Keeping things really simple ;)
+CMD [ "python", "manage.py", "runserver" ]
