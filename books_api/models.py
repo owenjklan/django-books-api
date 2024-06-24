@@ -30,3 +30,6 @@ class Publisher(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=255)
     books = models.ManyToManyField("Book", related_name="categories")
+
+    class Meta:
+        verbose_name_plural = "categories"

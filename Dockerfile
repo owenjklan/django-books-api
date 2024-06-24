@@ -15,7 +15,3 @@ ENV DJANGO_SETTINGS_MODULE=django_books_api.settings
 EXPOSE 8000
 
 CMD [ "/clean_start.sh" ]
-
-# Using the test server as this isn't a production app deployment.
-# Keeping things really simple ;)
-#CMD [ "python", "manage.py", "runserver", "0.0.0.0:8000" ]
