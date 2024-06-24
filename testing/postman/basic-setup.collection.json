@@ -1,0 +1,218 @@
+{
+	"info": {
+		"_postman_id": "92dea0c3-668d-487f-9819-080de6072bd0",
+		"name": "Autodojo Testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.0.0/collection.json",
+		"_exporter_id": "26066151"
+	},
+	"item": [
+		{
+			"name": "Confirm Empty Book List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"let responseObj = pm.response.json();",
+							"",
+							"pm.test(\"Response is empty list\", function() {",
+							"    pm.expect(responseObj.length).to.equal(0);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{baseUrl}}/api/v2/books/"
+			},
+			"response": []
+		},
+		{
+			"name": "Confirm Empty Author List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"let responseObj = pm.response.json();",
+							"",
+							"pm.test(\"Response is empty list\", function() {",
+							"    pm.expect(responseObj.length).to.equal(0);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{baseUrl}}/api/v2/authors/"
+			},
+			"response": []
+		},
+		{
+			"name": "Confirm Empty Category List",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"let responseObj = pm.response.json();",
+							"",
+							"pm.test(\"Response is empty list\", function() {",
+							"    pm.expect(responseObj.length).to.equal(0);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{baseUrl}}/api/v2/categories/"
+			},
+			"response": []
+		},
+		{
+			"name": "Confirm Empty Publishers",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 200\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"let responseObj = pm.response.json();",
+							"",
+							"pm.test(\"Response is empty list\", function() {",
+							"    pm.expect(responseObj.length).to.equal(0);",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": "{{baseUrl}}/api/v2/publishers/"
+			},
+			"response": []
+		},
+		{
+			"name": "Book creation fails with missing publisher FK",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 422\", function () {",
+							"    pm.response.to.have.status(422);",
+							"});",
+							"",
+							"let responseObj = pm.response.json();",
+							"let errorDetail = responseObj.detail[0]",
+							"",
+							"",
+							"pm.test(\"Response indicates 'publisher_id' is required\", function() {",
+							"    pm.expect(errorDetail.msg).to.equal(\"Field required\");",
+							"    pm.expect(errorDetail.type).to.equal(\"missing\");",
+							"    pm.expect(errorDetail.loc[errorDetail.loc.length - 1]).to.equal(\"publisher_id\");",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"The art of example data\",\n    \"isbn\": \"1231234567890\",\n    \"format\": \"Paperback\",\n    \"rrp\": \"1.23\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/api/v2/books/"
+			},
+			"response": []
+		},
+		{
+			"name": "Foreign key that doesn't exist returns 400 on creation attempt",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status code is 400\", function () {",
+							"    pm.response.to.have.status(400);",
+							"});",
+							"",
+							"let responseObj = pm.response.json();",
+							"",
+							"pm.test(\"AutoDojo response payload message\", function() {",
+							"    pm.expect(responseObj.api_error).to.equal(\"Publisher referenced by 'publisher_id' does not exist!\");",
+							"})"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n    \"title\": \"The art of example data\",\n    \"isbn\": \"1231234567890\",\n    \"format\": \"Paperback\",\n    \"rrp\": \"1.23\",\n    \"publisher_id\": 0\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": "{{baseUrl}}/api/v2/books/"
+			},
+			"response": []
+		}
+	]
+}

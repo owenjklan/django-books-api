@@ -1,0 +1,15 @@
+{
+	"id": "e8f80242-974c-415f-b381-1bb4199d7837",
+	"name": "Autodojo Docker-based Testing",
+	"values": [
+		{
+			"key": "baseUrl",
+			"value": "http://localhost:8000",
+			"type": "default",
+			"enabled": true
+		}
+	],
+	"_postman_variable_scope": "environment",
+	"_postman_exported_at": "2024-06-24T05:01:10.329Z",
+	"_postman_exported_using": "Postman/11.2.13"
+}
