@@ -1,7 +1,9 @@
 import inspect
 import os
 import types
+from typing import Any, Callable
 
+from django.http import HttpRequest
 from django.test import TestCase
 
 from autodojo.defaults import DefaultErrorResponseSchema
@@ -32,6 +34,7 @@ HTTP_VERB_EXPECTATIONS = {
                 "name": "DefaultErrorResponseSchema",
             },
         },
+        "view_func_signature": {"request": HttpRequest, "id": int},
     },
     "GETLIST": {
         "url_path": "/",
@@ -40,6 +43,9 @@ HTTP_VERB_EXPECTATIONS = {
                 "annotation": list,
                 "name": Schema,
             },
+        },
+        "view_func_signature": {
+            "request": HttpRequest,
         },
     },
     "POST": {
@@ -54,6 +60,10 @@ HTTP_VERB_EXPECTATIONS = {
                 "name": "DefaultErrorResponseSchema",
             },
         },
+        "view_func_signature": {
+            "request": HttpRequest,
+            "payload": "REQUEST_SCHEMA",  # Special value, to match generated Inbound schema class
+        },
     },
     "PUT": {
         "url_path": "/{int:id}",
@@ -66,6 +76,11 @@ HTTP_VERB_EXPECTATIONS = {
                 "annotation": Schema,
                 "name": "DefaultErrorResponseSchema",
             },
+        },
+        "view_func_signature": {
+            "request": HttpRequest,
+            "id": int,
+            "payload": "REQUEST_SCHEMA",
         },
     },
     "PATCH": {
@@ -80,6 +95,11 @@ HTTP_VERB_EXPECTATIONS = {
                 "name": "DefaultErrorResponseSchema",
             },
         },
+        "view_func_signature": {
+            "request": HttpRequest,
+            "id": int,
+            "payload": "REQUEST_SCHEMA",
+        },
     },
     "DELETE": {
         "url_path": "/{int:id}",
@@ -91,6 +111,10 @@ HTTP_VERB_EXPECTATIONS = {
                 "annotation": Schema,
                 "name": "DefaultErrorResponseSchema",
             },
+        },
+        "view_func_signature": {
+            "request": HttpRequest,
+            "id": int,
         },
     },
 }
@@ -148,45 +172,84 @@ class TestBasicViewGeneration(TestCase):
             auto_view = AutoDojoView(DummyModel, http_verb)
 
             self.assertEqual(auto_view.url_path, expectations["url_path"])
-            print(f"  - Expected URL path matched {expectations['url_path']}")
+            print(f"    - Expected URL path matched {expectations['url_path']}")
 
             # Inspect the response dictionary that was generated
-            response_dict = auto_view.response_config
-            print("  --[[ Inspecting generated view response dict... ]]--")
-            # Confirm expected number of status-codes in returned response dict
-            self.assertEqual(
-                len(response_dict.keys()),
-                len(expectations["response_status_codes"].keys()),
+            print("  --[[ Inspecting generated view response configuration ]]--")
+            self.inspect_generated_response_config(
+                auto_view.response_config, expectations, auto_view.response_schema
             )
 
-            for status_code, status_expectations in expectations[
-                "response_status_codes"
-            ].items():
-                # Is the expected status code defined in the returned response dict?
-                print(f"    - Status code: {status_code}")
-                self.assertTrue(status_code in response_dict.keys())
+            # Inspect the signature of the generated View function
+            print("  --[[ Inspecting generated view function signature ]]--")
+            self.inspect_generated_view_func_signature(
+                auto_view.view_func, expectations, auto_view.request_schema
+            )
 
-                #
-                expected_type = status_expectations["annotation"]
-                if expected_type == None:
-                    self.assertEqual(response_dict[status_code], None)
-                elif expected_type not in [list, dict, tuple]:
-                    # Class types
-                    self.assertTrue(
-                        issubclass(response_dict[status_code], expected_type)
-                    )
-                    # For class-based expected response types, check the name
-                    if "name" in status_expectations:
-                        self.assertEqual(
-                            response_dict[status_code].__name__,
-                            status_expectations["name"],
-                        )
-                else:
-                    # TODO: Work out how to inspect the type the list contains
-                    # types.GenericAlias was introduced in 3.9
-                    # https://docs.python.org/3/library/stdtypes.html#types-genericalias
-                    self.assertEqual(
-                        response_dict[status_code],
-                        types.GenericAlias(expected_type, auto_view.response_schema),
-                    )
             print(f"--[[ End of {http_verb}-specific test ]]--")
+
+    def inspect_generated_view_func_signature(
+        self,
+        view_func: Callable,
+        expectations: dict[str, Any],
+        request_schema: Schema = None,
+    ):
+        signature = inspect.signature(view_func)
+        params = signature.parameters
+
+        for expected_name, expected_annotation in expectations[
+            "view_func_signature"
+        ].items():
+            self.assertIn(expected_name, params)
+
+            # The special string, "REQUEST_SCHEMA" for the expected
+            # annotation indicates we want to see that the request schema
+            # that was generated is the same class as the given parameter's
+            # type.
+            if expected_annotation == "REQUEST_SCHEMA":
+                self.assertTrue(
+                    issubclass(params[expected_name].annotation, request_schema)
+                )
+            else:
+                self.assertEqual(params[expected_name].annotation, expected_annotation)
+
+    def inspect_generated_response_config(
+        self,
+        response_dict: dict[int, Any],
+        expectations: dict[str, Any],
+        response_schema: Schema = None,
+    ):
+        # Confirm expected number of status-codes in returned response dict
+        self.assertEqual(
+            len(response_dict.keys()),
+            len(expectations["response_status_codes"].keys()),
+        )
+
+        for status_code, status_expectations in expectations[
+            "response_status_codes"
+        ].items():
+            # Is the expected status code defined in the returned response dict?
+            print(f"    - Status code: {status_code}")
+            self.assertTrue(status_code in response_dict.keys())
+
+            #
+            expected_type = status_expectations["annotation"]
+            if expected_type is None:
+                self.assertEqual(response_dict[status_code], None)
+            elif expected_type not in [list, dict, tuple]:
+                # Class types
+                self.assertTrue(issubclass(response_dict[status_code], expected_type))
+                # For class-based expected response types, check the name
+                if "name" in status_expectations:
+                    self.assertEqual(
+                        response_dict[status_code].__name__,
+                        status_expectations["name"],
+                    )
+            else:
+                # TODO: Work out how to inspect the type the list contains
+                # types.GenericAlias was introduced in 3.9
+                # https://docs.python.org/3/library/stdtypes.html#types-genericalias
+                self.assertEqual(
+                    response_dict[status_code],
+                    types.GenericAlias(expected_type, response_schema),
+                )
