@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Type
 
 from django.db import models
 
@@ -57,7 +57,7 @@ class AutoDojoView:
 
     def __init__(
         self,
-        model_class: models.Model,
+        model_class: Type[models.Model],
         http_method: str,
         request_schema: ModelSchema = None,
         response_schema: ModelSchema = None,
