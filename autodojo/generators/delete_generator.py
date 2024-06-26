@@ -1,6 +1,7 @@
 from typing import Callable, Any, Optional
 
 from django.http import HttpRequest
+from ninja import Schema
 
 from autodojo.defaults import DefaultErrorResponseSchema
 from autodojo.generators.base_classes import AutoDojoViewGenerator
@@ -31,7 +32,7 @@ class AutoDojoDeleteGenerator(AutoDojoViewGenerator):
 
     @property
     def url_path(self) -> str:
-        return "/{int:id}/"
+        return "/{int:id}"
 
     @property
     def response_config(self) -> dict[int, Optional[Any]]:

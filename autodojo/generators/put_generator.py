@@ -62,7 +62,7 @@ class AutoDojoPutGenerator(AutoDojoViewGenerator):
 
     @property
     def url_path(self) -> str:
-        return "/{int:id}/"
+        return "/{int:id}"
 
     @property
     def response_config(self) -> dict[int, Optional[Any]]:
