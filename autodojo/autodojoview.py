@@ -2,7 +2,7 @@ from typing import Any, Type
 
 from django.db import models
 
-from ninja import ModelSchema
+from ninja import ModelSchema, Schema
 
 from autodojo.generators import (
     AutoDojoDeleteGenerator,
@@ -59,8 +59,8 @@ class AutoDojoView:
         self,
         model_class: Type[models.Model],
         http_method: str,
-        request_schema: ModelSchema = None,
-        response_schema: ModelSchema = None,
+        request_schema: Type[Schema] = None,
+        response_schema: Type[Schema] = None,
         request_schema_config: dict[str, Any] = None,
         response_schema_config: dict[str, Any] = None,
     ):
@@ -121,5 +121,5 @@ class AutoDojoView:
         self.view_func = self.generator_class.generate_view_func()
 
         # view_funcs receiving request schemas will need to patch
-        # their signature type annotations at runtime
+        # their signature type annotations at runtime.
         self.view_func = self.generator_class.patch_view_signature(self.view_func)
