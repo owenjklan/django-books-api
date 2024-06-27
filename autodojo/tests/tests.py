@@ -6,14 +6,12 @@ from typing import Any, Callable
 from django.http import HttpRequest
 from django.test import TestCase
 
-from autodojo.defaults import DefaultErrorResponseSchema
-from autodojo.tests.models import DummyModel, RelatedDummyModel
+from autodojo.tests.models import ChildModel, ForeignKeyParentModel
 from autodojo.tests.schemas import DummySchema
 
 os.environ["DJANGO_SETTINGS_MODULE"] = "django_books_api.settings"
 
-from django.db import models
-from ninja import Schema, ModelSchema
+from ninja import Schema
 
 from autodojo.autodojoview import AutoDojoView
 
@@ -27,7 +25,7 @@ HTTP_VERB_EXPECTATIONS = {
         "response_status_codes": {
             200: {
                 "annotation": Schema,
-                "name": "GeneratedDummyModelOut",
+                "name": "GeneratedChildModelOut",
             },
             404: {
                 "annotation": Schema,
@@ -53,7 +51,7 @@ HTTP_VERB_EXPECTATIONS = {
         "response_status_codes": {
             200: {
                 "annotation": Schema,
-                "name": "GeneratedDummyModelOut",
+                "name": "GeneratedChildModelOut",
             },
             400: {
                 "annotation": Schema,
@@ -70,7 +68,7 @@ HTTP_VERB_EXPECTATIONS = {
         "response_status_codes": {
             200: {
                 "annotation": Schema,
-                "name": "GeneratedDummyModelOut",
+                "name": "GeneratedChildModelOut",
             },
             404: {
                 "annotation": Schema,
@@ -88,7 +86,7 @@ HTTP_VERB_EXPECTATIONS = {
         "response_status_codes": {
             200: {
                 "annotation": Schema,
-                "name": "GeneratedDummyModelOut",
+                "name": "GeneratedChildModelOut",
             },
             404: {
                 "annotation": Schema,
@@ -133,7 +131,7 @@ class TestBasicViewGeneration(TestCase):
         ignored_config = {"depth": 2}
         try:
             _ = AutoDojoView(
-                DummyModel,
+                ChildModel,
                 "GET",
                 request_schema=DummySchema,
                 request_schema_config=ignored_config,
@@ -147,7 +145,7 @@ class TestBasicViewGeneration(TestCase):
         # Let's do it again, but for the response schema/schema_config
         try:
             _ = AutoDojoView(
-                DummyModel,
+                ChildModel,
                 "GET",
                 response_schema=DummySchema,
                 response_schema_config=ignored_config,
@@ -169,7 +167,7 @@ class TestBasicViewGeneration(TestCase):
         """
         for http_verb, expectations in HTTP_VERB_EXPECTATIONS.items():
             print(f"\n--[[ Testing basic view generation for verb: {http_verb} ]]--")
-            auto_view = AutoDojoView(DummyModel, http_verb)
+            auto_view = AutoDojoView(ChildModel, http_verb)
 
             self.assertEqual(auto_view.url_path, expectations["url_path"])
             print(f"    - Expected URL path matched {expectations['url_path']}")
