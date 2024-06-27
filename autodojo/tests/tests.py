@@ -1,7 +1,7 @@
 import inspect
 import os
 import types
-from typing import Any, Callable
+from typing import Any, Callable, Type
 
 from django.http import HttpRequest
 from django.test import TestCase
@@ -190,7 +190,7 @@ class TestBasicViewGeneration(TestCase):
         self,
         view_func: Callable,
         expectations: dict[str, Any],
-        request_schema: Schema = None,
+        request_schema: Type[Schema] = None,
     ):
         signature = inspect.signature(view_func)
         params = signature.parameters
