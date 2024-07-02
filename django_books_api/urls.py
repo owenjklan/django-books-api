@@ -20,6 +20,9 @@ from django.urls import path
 from ninja import NinjaAPI
 
 from autodojo import AutoDojoRouter
+
+from books_api.extra import router as extras_router
+
 from books_api.api.v1 import (
     books_router,
     authors_router,
@@ -67,6 +70,8 @@ api_v2.add_router(*books_adr.add_router_args)
 api_v2.add_router(*authors_adr.add_router_args)
 api_v2.add_router(*categories_adr.add_router_args)
 api_v2.add_router(*publishers_adr.add_router_args)
+
+api_v2.add_router("/book/", extras_router)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
