@@ -23,22 +23,6 @@ from autodojo import AutoDojoRouter
 
 from books_api.extra import router as extras_router
 
-from books_api.api.v1 import (
-    books_router,
-    authors_router,
-    publishers_router,
-    categories_router,
-)
-
-
-# api_v1 = NinjaAPI()
-# api_v1.add_router("/books/", books_router)
-# api_v1.add_router("/authors/", authors_router)
-# api_v1.add_router("/publishers/", publishers_router)
-# api_v1.add_router("/categories/", categories_router)
-
-from ninja.security import django_auth
-
 # Experimental "V2" for auto-generated router, including ModelSchema
 # and views etc.
 book_response_schema_configs = {
@@ -54,7 +38,7 @@ authors_response_schema_configs = {
 books_adr = AutoDojoRouter(
     app_label="books_api",
     model="Book",
-    # auth_class=django_auth,
+    # auth_class=django_auth,  # AutoDojoRouter will create a NinjaAPI class using this, if present.
     response_schema_configs=book_response_schema_configs,
 )
 authors_adr = AutoDojoRouter(

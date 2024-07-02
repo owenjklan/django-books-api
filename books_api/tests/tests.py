@@ -1,11 +1,10 @@
-import unittest
 from decimal import Decimal
 
 from django.test import TransactionTestCase, Client
 
-from books_api.helpers import patch_object, update_object
+from books_api.helpers import patch_object
 from books_api.models import Publisher, Author, Book
-from books_api.schemas import BookInPatchSchema, BookInSchema
+from books_api.schemas import BookInPatchSchema
 
 BOOK_INITIAL_ISBN = "1231234567890"
 BOOK_INITIAL_RRP = Decimal("1.23")
