@@ -18,6 +18,8 @@ classes. Foreign Key support is present but generating views
 to deal with M2M relations appropriately is missing from AutoDojo,
 as of July 2024.
 
+To see an example of AutoDojo in use, take a look at [django_books_api/urls.py](./django_books_api/urls.py).
+
 ### There's also Postman / Newman-based testing...
 This project also became a vector for experimenting with building
 Postman collections to run tests against generated APIs. Although
